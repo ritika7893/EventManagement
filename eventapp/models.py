@@ -34,18 +34,33 @@ class AllLog(models.Model):
     @property
     def is_anonymous(self):
         return False
+    
 class UserReg(models.Model):
+    USER_TYPE_CHOICES = [
+        ('individual', 'Individual'),
+        ('team', 'Team'),
+    ]
     user_id = models.CharField(max_length=20,unique=True,editable=False)
-    first_name = models.CharField(max_length=100,null=True, blank=True)
-    last_name = models.CharField(max_length=100,null=True, blank=True)
+    user_type=models.CharField( max_length=100,choices=USER_TYPE_CHOICES,default='individual')
+    team_name=models.CharField(max_length=100,blank=True, null=True)
+    full_name = models.CharField(max_length=100,null=True, blank=True)
+    gender= models.CharField(max_length=100,null=True, blank=True)
     email = models.EmailField(unique=True,null=True, blank=True)
     phone= models.CharField(max_length=15, unique=True,null=True, blank=True)
     password = models.CharField(max_length=255,null=True, blank=True)
     talent_scope = models.JSONField(default=list, null=True, blank=True)
     profile_image = models.ImageField(upload_to='profile_images/', null=True, blank=True)
-    portfolio_link = models.JSONField(default=list, null=True, blank=True)
-    date_of_birth = models.DateField(null=True, blank=True)
+    social_media_link = models.JSONField(default=list, null=True, blank=True)
+    additional_link = models.JSONField(default=list, null=True, blank=True)
+    portfolio_file=models.FileField(upload_to="",blank=True,null=True)
+    national_level_certificate = models.FileField(upload_to="portfolio_file/",blank=True,null=True)
+    internation_level_certificate_award=models.FileField(upload_to="international_level_certificate_award/",blank=True,null=True)
+    state_level_certificate=models.FileField(upload_to="state_level_certificate/",blank=True,null=True)
+    district_level_certificate=models.FileField(upload_to="district_level_certificate/",blank=True,null=True)
+    college_level_certificate=models.FileField(upload_to="college_level_certificate/",blank=True,null=True)
+    other_certificate=models.FileField(upload_to="other_certificate/",blank=True,null=True)
     address = models.TextField(blank=True, null=True)
+   
     country = models.CharField(max_length=100,blank=True, null=True)
     state = models.CharField(max_length=100,blank=True, null=True)
     city = models.CharField(max_length=100,blank=True, null=True)

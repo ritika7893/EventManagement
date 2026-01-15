@@ -10,8 +10,7 @@ class UserRegSerializer(serializers.ModelSerializer):
        
 
     def create(self, validated_data):
-    # Remove phone for AllLog
-        phone = validated_data.pop("phone")
+   
         
         # Set role
         role = "user"
@@ -30,7 +29,7 @@ class UserRegSerializer(serializers.ModelSerializer):
         AllLog.objects.create(
             unique_id=user.user_id,
             email=user.email,
-            phone=phone,
+            phone=user.phone, 
             password=hashed_password,
             role=role
         )

@@ -14,7 +14,7 @@ def send_email_verification_code(user, code):
     subject = "Verify your email address"
 
     message = f"""
-Hello {user.first_name},
+Hello {user.full_name},
 
 Thank you for registering with us.
 Your registered email-id is {user.email}.
