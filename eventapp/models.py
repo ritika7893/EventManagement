@@ -42,6 +42,7 @@ class UserReg(models.Model):
     phone= models.CharField(max_length=15, unique=True,null=True, blank=True)
     password = models.CharField(max_length=255,null=True, blank=True)
     talent_scope = models.JSONField(default=list, null=True, blank=True)
+    profile_image = models.ImageField(upload_to='profile_images/', null=True, blank=True)
     portfolio_link = models.JSONField(default=list, null=True, blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
     address = models.TextField(blank=True, null=True)
@@ -70,3 +71,28 @@ class EmailVerification(models.Model):
 
     def __str__(self):
         return f"{self.user.email} - Verified: {self.is_verified}"
+
+class DiscoverYourTalentItem(models.Model):
+    page_title = models.CharField(max_length=255,blank=True, null=True)
+    title = models.CharField(max_length=255,blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    image = models.ImageField(upload_to="discovertalent_images/", blank=True, null=True)
+    module = models.JSONField(default=list, blank=True)  # JSON field with default empty list
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.title
+
+class CompanyDetailsItem(models.Model):
+    company_name = models.CharField(max_length=255, blank=True, null=True)
+    address = models.TextField(blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
+    phone = models.CharField(max_length=15, blank=True, null=True)
+    logo = models.ImageField(upload_to="company_logos/", blank=True, null=True)
+    profile_link=models.JSONField(default=list, blank=True)  # JSON field with default empty list
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.company_name
