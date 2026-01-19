@@ -125,10 +125,17 @@ class Event(models.Model):
         super().save(*args, **kwargs)
     def __str__(self):
         return self.event_name
+    
 class PageItem(models.Model):
-    page_title = models.CharField(max_length=150)
+    page_title = models.CharField(max_length=200)
+    parent = models.ForeignKey("self",on_delete=models.CASCADE, related_name="children",null=True, blank=True)
+    show_in_nav = models.BooleanField(default=True)
+    nav_order = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["nav_order"]
 
     def __str__(self):
         return self.page_title
@@ -159,3 +166,16 @@ class AboutUsItem(models.Model):
     module=models.JSONField(default=list, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+class TopNav1(models.Model):
+    POSITION_CHOICES = (
+        ("left", "Left"),
+        ("right", "Right"),
+    )
+    position = models.CharField(max_length=10, choices=POSITION_CHOICES,default="left")
+    text=models.TextField(blank=True,null=True)
+    icon=models.ImageField(upload_to="company_email_phone/", blank=True, null=True)
+    created_at=models.DateTimeField(auto_now_add=True)
+    updated_at=models.DateTimeField(auto_now=True)
+    def __str__(self):
+        return self.text

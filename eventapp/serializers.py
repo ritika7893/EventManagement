@@ -1,7 +1,7 @@
 from sched import Event
 from django.forms import ValidationError
 from rest_framework import serializers
-from .models import  AboutUsItem, AllLog,  CardComponentItem, CarsouselItem1, CompanyDetailsItem, DiscoverYourTalentItem, EmailVerification,PageItem, UserReg   
+from .models import  AboutUsItem, AllLog,  CardComponentItem, CarsouselItem1, CompanyDetailsItem, DiscoverYourTalentItem, EmailVerification, PageItem, TopNav1, UserReg   
 from django.contrib.auth.hashers import make_password
 from .utils import generate_verification_code, send_email_verification_code
 
@@ -105,6 +105,16 @@ class CardComponentItemSerializer(serializers.ModelSerializer):
         fields = "__all__"
         read_only_fields = ["id", "created_at", "updated_at"]
 
+class PageNavbarSerializer(serializers.ModelSerializer):
+    children = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PageItem
+        fields = ["id", "page_title", "children"]
+
+    def get_children(self, obj):
+        children_qs = obj.children.filter(show_in_nav=True).order_by("nav_order")
+        return PageNavbarSerializer(children_qs, many=True).data
 class AboutUsItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = AboutUsItem
@@ -119,3 +129,9 @@ class PageItemSerializer(serializers.ModelSerializer):
         fields = "__all__"
         read_only_fields = ["id", "created_at", "updated_at"]
 
+
+class TopNav1Serializer(serializers.ModelSerializer):
+    class Meta:
+        model = TopNav1
+        fields = "__all__"
+        read_only_fields = ["id", "created_at", "updated_at"]

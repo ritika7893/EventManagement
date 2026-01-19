@@ -1,12 +1,12 @@
 from sched import Event
 from eventapp.permissions import IsAdminRole
-from .models import  AboutUsItem, AllLog, CardComponentItem, CarsouselItem1, CompanyDetailsItem, DiscoverYourTalentItem, EmailVerification, PageItem, UserReg
+from .models import  AboutUsItem, AllLog, CardComponentItem, CarsouselItem1, CompanyDetailsItem, DiscoverYourTalentItem, EmailVerification, PageItem, TopNav1, UserReg
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.utils.timezone import now
-from .serializers import  AboutUsItemSerializer, CardComponentItemSerializer, CarsouselItem1Serializer,  CompanyDetailItemSerializer, DiscoverYourTalentItemSerializer, EventSerializer, PageItemSerializer, UserRegSerializer
+from .serializers import  AboutUsItemSerializer, CardComponentItemSerializer, CarsouselItem1Serializer,  CompanyDetailItemSerializer, DiscoverYourTalentItemSerializer, EventSerializer, PageItemSerializer, PageNavbarSerializer, TopNav1Serializer, UserRegSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
@@ -742,3 +742,110 @@ class AboutUsItemAPIView(APIView):
         return Response(
             {"success": True, "message": "AboutUs deleted successfully"}
         )
+
+
+class TopNav1APIView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def get_permissions(self):
+        return [AllowAny()] if self.request.method == "GET" else [IsAdminRole()]
+
+    def get(self, request):
+        item_id = request.query_params.get("id")
+
+        if item_id:
+            try:
+                item = TopNav1.objects.get(id=item_id)
+                return Response(
+                    {"success": True, "data": TopNav1Serializer(item).data}
+                )
+            except TopNav1.DoesNotExist:
+                return Response(
+                    {"success": False, "message": "TopNav item not found"},
+                    status=404
+                )
+
+       
+        queryset = TopNav1.objects.all()
+        serializer = TopNav1Serializer(queryset, many=True)
+
+        response = {
+            "success": True,
+            "left": [],
+            "right": []
+        }
+
+        for item in serializer.data:
+            pos = item.get("position")
+            if pos in response:
+                response[pos].append(item)
+
+        return Response(response)
+
+    def post(self, request):
+        serializer = TopNav1Serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"success": True, "message": "TopNav item created successfully"},
+                status=201
+            )
+        return Response(
+            {"success": False, "errors": serializer.errors},
+            status=400
+        )
+
+    def put(self, request):
+        item_id = request.data.get("id")
+        if not item_id:
+            return Response(
+                {"success": False, "message": "Item ID is required"},
+                status=400
+            )
+
+        try:
+            item = TopNav1.objects.get(id=item_id)
+        except TopNav1.DoesNotExist:
+            return Response(
+                {"success": False, "message": "TopNav item not found"},
+                status=404
+            )
+
+        serializer = TopNav1Serializer(item, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"success": True, "message": "TopNav item updated successfully"}
+            )
+        return Response(
+            {"success": False, "errors": serializer.errors},
+            status=400
+        )
+
+    def delete(self, request):
+        item_id = request.data.get("id")
+        if not item_id:
+            return Response(
+                {"success": False, "message": "Item ID is required"},
+                status=400
+            )
+
+        try:
+            TopNav1.objects.get(id=item_id).delete()
+            return Response(
+                {"success": True, "message": "TopNav item deleted successfully"}
+            )
+        except TopNav1.DoesNotExist:
+            return Response(
+                {"success": False, "message": "TopNav item not found"},
+                status=404
+            )
+class NavbarAPIView(APIView):
+    def get(self, request):
+        root_pages = PageItem.objects.filter(
+            parent__isnull=True,
+            show_in_nav=True
+        ).order_by("nav_order")
+
+        serializer = PageNavbarSerializer(root_pages, many=True)
+        return Response(serializer.data)

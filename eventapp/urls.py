@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import CardComponentAPIView, CarsouselItem1APIView, CompanyDetailItemAPIView, EventAPIView, LoginAPIView, PageAPIView, RefreshTokenAPIView, UserRegAPIView, VerifyEmailCodeAPIView
+from .views import CardComponentAPIView, CarsouselItem1APIView, CompanyDetailItemAPIView, EventAPIView, LoginAPIView, NavbarAPIView, PageAPIView, RefreshTokenAPIView, TopNav1APIView, UserRegAPIView, VerifyEmailCodeAPIView
 
 urlpatterns = [
     
@@ -12,4 +12,6 @@ urlpatterns = [
     path("pages-item/", PageAPIView.as_view(), name="pages"),
     path("cards-item/", CardComponentAPIView.as_view(), name="cards"),
     path("carousel1-item/", CarsouselItem1APIView.as_view(), name="carousel-api"),
+    path("top-nav-1/", TopNav1APIView.as_view(), name="top-nav-api"),
+    path("navbar-list/", NavbarAPIView.as_view(), name="navbar-api"),
 ]
