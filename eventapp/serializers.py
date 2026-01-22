@@ -121,9 +121,7 @@ class AboutUsItemSerializer(serializers.ModelSerializer):
         fields = "__all__"
         read_only_fields = ["id", "created_at", "updated_at"]
 class PageItemSerializer(serializers.ModelSerializer):
-    cards = CardComponentItemSerializer(many=True, read_only=True)
-    carousels1 = CarsouselItem1Serializer(many=True, read_only=True)
-    aboutus = AboutUsItemSerializer(many=True, read_only=True)
+   
     class Meta:
         model = PageItem
         fields = "__all__"

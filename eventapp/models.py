@@ -116,6 +116,7 @@ class Event(models.Model):
     event_name = models.CharField(max_length=255,blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     event_date_time=models.DateTimeField (blank=True, null=True)
+    event_type=models.CharField(max_length=100,blank=True, null=True)
     venue = models.CharField(max_length=255,blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -150,7 +151,7 @@ class CardComponentItem(models.Model):
         return self.title
 
 class CarsouselItem1(models.Model):
-    page=models.ForeignKey(PageItem,on_delete=models.CASCADE,related_name="carousels1")
+  
     title=models.CharField(max_length=200)
     sub_title=models.CharField(max_length=200,blank=True,null=True)
     description=models.TextField(blank=True,null=True)
