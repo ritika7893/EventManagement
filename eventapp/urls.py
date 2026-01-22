@@ -1,5 +1,6 @@
 from django.urls import path
-from .views import AboutUsItemAPIView, CardComponentAPIView, CarsouselItem1APIView, CompanyDetailItemAPIView, EventAPIView, LoginAPIView, NavbarAPIView, PageAPIView, RefreshTokenAPIView, TopNav1APIView, UserRegAPIView, VerifyEmailCodeAPIView
+ 
+from .views import AboutUsItemAPIView, CardComponentAPIView, CarsouselItem1APIView, CompanyDetailItemAPIView, EventAPIView, EventParticipantAPIView, LoginAPIView, NavbarAPIView, PageAPIView, RefreshTokenAPIView, TopNav1APIView, UserRegAPIView, VerifyEmailCodeAPIView, get_user_id_by_email
 
 urlpatterns = [
     
@@ -15,4 +16,6 @@ urlpatterns = [
     path("aboutus-item/",AboutUsItemAPIView.as_view(),name="aboutus-api"),
     path("top-nav-1/", TopNav1APIView.as_view(), name="top-nav-api"),
     path("navbar-list/", NavbarAPIView.as_view(), name="navbar-api"),
+    path("event-participant/", EventParticipantAPIView.as_view(), name="event-participant-api"),
+    path("get-userid/", get_user_id_by_email,name="get-user-id"),
 ]

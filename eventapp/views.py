@@ -1,12 +1,12 @@
-from sched import Event
+
 from eventapp.permissions import IsAdminRole
-from .models import  AboutUsItem, AllLog, CardComponentItem, CarsouselItem1, CompanyDetailsItem, DiscoverYourTalentItem, EmailVerification, PageItem, TopNav1, UserReg
+from .models import Event, AboutUsItem, AllLog, CardComponentItem, CarsouselItem1, CompanyDetailsItem, DiscoverYourTalentItem, EmailVerification, EventParticipant, PageItem, TopNav1, UserReg
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.utils.timezone import now
-from .serializers import  AboutUsItemSerializer, CardComponentItemSerializer, CarsouselItem1Serializer,  CompanyDetailItemSerializer, DiscoverYourTalentItemSerializer, EventSerializer, PageItemSerializer, PageNavbarSerializer, TopNav1Serializer, UserRegSerializer
+from .serializers import  AboutUsItemSerializer, CardComponentItemSerializer, CarsouselItem1Serializer,  CompanyDetailItemSerializer, DiscoverYourTalentItemSerializer,  EventParticipantSerializer, EventSerializer, PageItemSerializer, PageNavbarSerializer, TopNav1Serializer, UserRegSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
@@ -849,3 +849,58 @@ class NavbarAPIView(APIView):
 
         serializer = PageNavbarSerializer(root_pages, many=True)
         return Response(serializer.data)
+class EventParticipantAPIView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [IsAuthenticated()]  # only logged-in users
+        return [AllowAny()] 
+    def post(self, request):
+        serializer = EventParticipantSerializer(data=request.data)
+        if serializer.is_valid():
+            participant = serializer.save()
+            return Response(
+                {"success": True, "message": "Participant registered successfully",},
+                status=status.HTTP_201_CREATED
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get(self, request):
+            user_id = request.query_params.get("user_id")
+            event_id = request.query_params.get("event_id")
+
+            queryset = EventParticipant.objects.all()
+
+            if user_id:
+                queryset = queryset.filter(user_id__user_id=user_id)
+
+            if event_id:
+                queryset = queryset.filter(event_id__event_id=event_id)
+
+            serializer = EventParticipantSerializer(queryset, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+from rest_framework.decorators import api_view
+@api_view(['GET'])
+def get_user_id_by_email(request):
+    email = request.query_params.get("email")
+
+    if not email:
+        return Response(
+            {"message": "email is required"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    try:
+        user = UserReg.objects.get(email=email)
+        return Response(
+            {
+                "user_id": user.user_id,
+                "message": "User found"
+            },
+            status=status.HTTP_200_OK
+        )
+    except UserReg.DoesNotExist:
+        return Response(
+            {"message": "User not found"},
+            status=status.HTTP_404_NOT_FOUND
+        )

@@ -180,3 +180,14 @@ class TopNav1(models.Model):
     updated_at=models.DateTimeField(auto_now=True)
     def __str__(self):
         return self.text
+    
+class EventParticipant(models.Model):
+    user_id = models.ForeignKey(UserReg, on_delete=models.CASCADE, related_name="event_participations",to_field='user_id')
+    event_id= models.ForeignKey(Event, on_delete=models.CASCADE, related_name="participants",to_field='event_id')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user_id', 'event_id')
+
+    def __str__(self):
+        return f"{self.user.user_id} → {self.event.event_name}"
