@@ -191,3 +191,11 @@ class EventParticipant(models.Model):
 
     def __str__(self):
         return f"{self.user.user_id} → {self.event.event_name}"
+class ContactUs(models.Model):
+    full_name = models.CharField(max_length=100)
+    email = models.EmailField(blank=True, null=True)
+    mobile_number = models.CharField(max_length=15,blank=True, null=True)
+    message = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    def __str__(self):
+        return f"{self.full_name} - {self.subject}"

@@ -1,12 +1,12 @@
 
 from eventapp.permissions import IsAdminRole
-from .models import Event, AboutUsItem, AllLog, CardComponentItem, CarsouselItem1, CompanyDetailsItem, DiscoverYourTalentItem, EmailVerification, EventParticipant, PageItem, TopNav1, UserReg
+from .models import ContactUs, Event, AboutUsItem, AllLog, CardComponentItem, CarsouselItem1, CompanyDetailsItem, DiscoverYourTalentItem, EmailVerification, EventParticipant, PageItem, TopNav1, UserReg
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.utils.timezone import now
-from .serializers import  AboutUsItemSerializer, CardComponentItemSerializer, CarsouselItem1Serializer,  CompanyDetailItemSerializer, DiscoverYourTalentItemSerializer,  EventParticipantSerializer, EventSerializer, PageItemSerializer, PageNavbarSerializer, TopNav1Serializer, UserRegSerializer
+from .serializers import  AboutUsItemSerializer, CardComponentItemSerializer, CarsouselItem1Serializer,  CompanyDetailItemSerializer, ContactUsSerializer, DiscoverYourTalentItemSerializer,  EventParticipantSerializer, EventSerializer,  PageItemSerializer, PageNavbarSerializer, ResendEmailOTPSerializer, ResetPasswordEmailOTPSerializer, ResetPasswordSerializer, TopNav1Serializer, UserRegSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
@@ -121,7 +121,7 @@ class VerifyEmailCodeAPIView(APIView):
         AllLog.objects.filter(email=email).update(is_verified=True)
 
         return Response(
-            {"success": True, "message": "Email verified successfully"}
+            {"success": True, "message": "Email Code verified successfully"}
         )
 class LoginAPIView(APIView):
     def post(self, request):
@@ -270,7 +270,7 @@ class DiscoverYourTalentItemAPIView(APIView):
             status=400
         )
 
-    # 🔹 DELETE
+   
     def delete(self, request):
         item_id = request.data.get("id")
         if not item_id:
@@ -400,7 +400,6 @@ class PageAPIView(APIView):
     def get_permissions(self):
         return [AllowAny()] if self.request.method == "GET" else [IsAdminRole()]
 
-    # 🔹 GET (single by id OR all)
     def get(self, request):
         page_id = request.query_params.get("id")
 
@@ -421,7 +420,7 @@ class PageAPIView(APIView):
             {"success": True, "data": PageItemSerializer(pages, many=True).data}
         )
 
-    # 🔹 POST
+
     def post(self, request):
         serializer = PageItemSerializer(data=request.data)
         if serializer.is_valid():
@@ -436,7 +435,7 @@ class PageAPIView(APIView):
             status=400
         )
 
-    # 🔹 PUT
+
     def put(self, request):
         page_id = request.data.get("id")
         if not page_id:
@@ -464,7 +463,7 @@ class PageAPIView(APIView):
             status=400
         )
 
-    # 🔹 DELETE
+
     def delete(self, request):
         page_id = request.data.get("id")
         if not page_id:
@@ -904,3 +903,46 @@ def get_user_id_by_email(request):
             {"message": "User not found"},
             status=status.HTTP_404_NOT_FOUND
         )
+class ContactUsAPIView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    def get_permissions(self):
+        if self.request.method == "POST":
+            return [AllowAny()]
+        return [IsAdminRole()]
+    
+    def post(self, request):
+        serializer = ContactUsSerializer(data=request.data)
+        if serializer.is_valid():
+            contact = serializer.save()
+            return Response(
+                {"message": "Contact message submitted successfully!"},
+                status=status.HTTP_201_CREATED
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get(self, request):
+        contacts = ContactUs.objects.all().order_by('-id')
+        serializer = ContactUsSerializer(contacts, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+class ResendEmailOTPView(APIView):
+    def post(self, request):
+        serializer = ResendEmailOTPSerializer(data=request.data)
+        if serializer.is_valid():
+            data = serializer.save()
+            return Response(data, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class ResetPasswordEmailOTPAPIView(APIView):
+    def post(self,request):
+        serializer=ResetPasswordEmailOTPSerializer(data=request.data)
+        if serializer.is_valid():
+            data=serializer.save()
+            return Response(data,status=status.HTTP_200_OK)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+class ResetPasswordAPIView(APIView):
+    def post(self, request):
+        serializer = ResetPasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            return Response(serializer.save())
+        return Response(serializer.errors, status=400)

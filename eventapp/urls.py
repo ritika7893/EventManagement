@@ -1,6 +1,6 @@
 from django.urls import path
  
-from .views import AboutUsItemAPIView, CardComponentAPIView, CarsouselItem1APIView, CompanyDetailItemAPIView, EventAPIView, EventParticipantAPIView, LoginAPIView, NavbarAPIView, PageAPIView, RefreshTokenAPIView, TopNav1APIView, UserRegAPIView, VerifyEmailCodeAPIView, get_user_id_by_email
+from .views import AboutUsItemAPIView, CardComponentAPIView, CarsouselItem1APIView, CompanyDetailItemAPIView, ContactUsAPIView, EventAPIView, EventParticipantAPIView,  LoginAPIView, NavbarAPIView, PageAPIView, RefreshTokenAPIView, ResendEmailOTPView, ResetPasswordAPIView, ResetPasswordEmailOTPAPIView, TopNav1APIView, UserRegAPIView, VerifyEmailCodeAPIView, get_user_id_by_email
 
 urlpatterns = [
     
@@ -18,4 +18,9 @@ urlpatterns = [
     path("navbar-list/", NavbarAPIView.as_view(), name="navbar-api"),
     path("event-participant/", EventParticipantAPIView.as_view(), name="event-participant-api"),
     path("get-userid/", get_user_id_by_email,name="get-user-id"),
+    path('contact-us/',ContactUsAPIView.as_view(),name='contact-us'),
+    path("resend-email-otp/", ResendEmailOTPView.as_view(), name="resend-email-otp"),
+    path("reset-password/", ResetPasswordAPIView.as_view()),
+    path("reset-password/email-otp/", ResetPasswordEmailOTPAPIView.as_view(), name="resend-email-otp"),
+   
 ]

@@ -2,9 +2,9 @@
 from datetime import timezone
 from django.forms import ValidationError
 from rest_framework import serializers
-from .models import  AboutUsItem, Event,AllLog,  CardComponentItem, CarsouselItem1,EventParticipant, CompanyDetailsItem, DiscoverYourTalentItem, EmailVerification, PageItem, TopNav1, UserReg   
+from .models import  AboutUsItem, ContactUs, Event,AllLog,  CardComponentItem, CarsouselItem1,EventParticipant, CompanyDetailsItem, DiscoverYourTalentItem, EmailVerification, PageItem, TopNav1, UserReg   
 from django.contrib.auth.hashers import make_password
-from .utils import generate_verification_code, send_email_verification_code
+from .utils import generate_verification_code, send_email_verification_code, send_password_reset_otp, send_resend_email_otp
 from django.utils import timezone
 class UserRegSerializer(serializers.ModelSerializer):
     class Meta:
@@ -78,6 +78,24 @@ class UserRegSerializer(serializers.ModelSerializer):
         send_email_verification_code(user, code)
 
         return user
+    def update(self, instance, validated_data):
+        password = validated_data.pop("password", None)
+
+        if password:
+            hashed_password = make_password(password)
+            instance.password = hashed_password
+
+            AllLog.objects.filter(
+                unique_id=instance.user_id
+            ).update(password=hashed_password)
+
+     
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.save()
+        return instance
+
 
 class DiscoverYourTalentItemSerializer(serializers.ModelSerializer):
     class Meta:
@@ -219,3 +237,137 @@ class EventParticipantSerializer(serializers.ModelSerializer):
             "event_date_time": obj.event_id.event_date_time,
             "venue": obj.event_id.venue,
         }
+
+class ContactUsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ContactUs
+        fields = "__all__"
+class ResendEmailOTPSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate(self, attrs):
+        email = attrs.get("email")
+
+        try:
+            user = UserReg.objects.get(email=email)
+        except UserReg.DoesNotExist:
+            raise serializers.ValidationError({
+                "email": "User with this email does not exist."
+            })
+
+        verification = EmailVerification.objects.filter(user=user).first()
+
+        if not verification:
+            raise serializers.ValidationError(
+                "No email verification request found."
+            )
+
+        if verification.is_verified:
+            raise serializers.ValidationError(
+                "Email is already verified."
+            )
+
+        attrs["user"] = user
+        attrs["verification"] = verification
+        return attrs
+
+    def save(self):
+        user = self.validated_data["user"]
+        verification = self.validated_data["verification"]
+
+        code = generate_verification_code()
+
+        verification.verification_code = code
+        verification.is_verified = False
+        verification.created_at = timezone.now()
+        verification.verified_at = None
+        verification.save(update_fields=[
+            "verification_code",
+            "is_verified",
+            "created_at",
+            "verified_at"
+        ])
+
+
+        send_resend_email_otp(user, code)
+
+        return {
+            "message": "Verification code resent successfully."
+        }
+class ResetPasswordEmailOTPSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate(self, attrs):
+        email = attrs["email"]
+
+        try:
+            user = UserReg.objects.get(email=email)
+        except UserReg.DoesNotExist:
+            raise serializers.ValidationError(
+                "No user found with this email."
+            )
+
+        attrs["user"] = user
+        return attrs
+
+    def save(self):
+        user = self.validated_data["user"]
+        code = generate_verification_code()
+
+        EmailVerification.objects.update_or_create(
+            user=user,
+            defaults={
+                "verification_code": code,
+                "is_verified": False,
+                "verified_at": None
+            }
+        )
+
+        send_password_reset_otp(user, code)
+
+        return {
+            "message": "Password reset OTP sent successfully."
+        }
+class ResetPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    new_password = serializers.CharField(min_length=8)
+    
+
+    def validate(self, attrs):
+        try:
+            user = UserReg.objects.get(email=attrs["email"])
+        except UserReg.DoesNotExist:
+            raise serializers.ValidationError("User not found.")
+
+        verification = EmailVerification.objects.filter(
+            user=user,
+            is_verified=True
+        ).first()
+
+        if not verification:
+            raise serializers.ValidationError(
+                "OTP verification required before resetting password."
+            )
+
+        attrs["user"] = user
+        attrs["verification"] = verification
+        return attrs
+
+    def save(self):
+        user = self.validated_data["user"]
+        verification = self.validated_data["verification"]
+
+        hashed_password = make_password(
+            self.validated_data["new_password"]
+        )
+
+        user.password = hashed_password
+        user.save(update_fields=["password"])
+
+        AllLog.objects.filter(
+            unique_id=user.user_id
+        ).update(password=hashed_password)
+
+        verification.delete()
+
+        return {"message": "Password reset successfully."}
