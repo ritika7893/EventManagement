@@ -117,6 +117,7 @@ class Event(models.Model):
     description = models.TextField(blank=True, null=True)
     event_date_time=models.DateTimeField (blank=True, null=True)
     event_type=models.CharField(max_length=100,blank=True, null=True)
+    image = models.ImageField(upload_to="event_images/", blank=True, null=True) 
     venue = models.CharField(max_length=255,blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -221,6 +222,36 @@ class ConcertEventServiceItem(models.Model):
     title=models.CharField(max_length=200,blank=True, null=True)
     description=models.TextField(blank=True, null=True)
     module=models.JSONField(default=list, blank=True, null=True)
-    image=models.ImageField(upload_to="entertainment_service_images/", blank=True, null=True)
+    image=models.ImageField(upload_to="concert_service_images/", blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    def __str__(self):
+        return self.title
+
+
+class PrivatePartiesEventServiceItem(models.Model):
+    title=models.CharField(max_length=200,blank=True, null=True)
+    description=models.TextField(blank=True, null=True)
+    module=models.JSONField(default=list, blank=True, null=True)
+    image=models.ImageField(upload_to="private_parties_service_images/", blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    def __str__(self):
+        return self.title
+    
+class SeminarEventServiceItem(models.Model):
+    title=models.CharField(max_length=200,blank=True, null=True)
+    description=models.TextField(blank=True, null=True)
+    module=models.JSONField(default=list, blank=True, null=True)
+    image=models.ImageField(upload_to="seminar_service_images/", blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    def __str__(self):
+        return self.title
+    
+class GalleryItem(models.Model):
+    title=models.CharField(max_length=200,blank=True, null=True)
+    description=models.TextField(blank=True, null=True)
+    image=models.ImageField(upload_to="gallery_images/", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

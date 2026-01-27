@@ -2,7 +2,7 @@
 from datetime import timezone
 from django.forms import ValidationError
 from rest_framework import serializers
-from .models import  AboutUsItem, ConcertEventServiceItem, ContactUs, CorporateEventServiceItem, EntertainmentEventServiceItem, Event,AllLog,  CardComponentItem, CarsouselItem1,EventParticipant, CompanyDetailsItem, DiscoverYourTalentItem, EmailVerification, PageItem,  TopNav1, UserReg   
+from .models import  AboutUsItem, ConcertEventServiceItem, ContactUs, CorporateEventServiceItem, EntertainmentEventServiceItem, Event,AllLog,  CardComponentItem, CarsouselItem1,EventParticipant, CompanyDetailsItem, DiscoverYourTalentItem, EmailVerification, GalleryItem, PageItem, PrivatePartiesEventServiceItem, SeminarEventServiceItem,  TopNav1, UserReg   
 from django.contrib.auth.hashers import make_password
 from .utils import generate_verification_code, send_email_verification_code, send_password_reset_otp, send_resend_email_otp
 from django.utils import timezone
@@ -391,3 +391,21 @@ class ConcertEventServiceItemSerializer(serializers.ModelSerializer):
         fields="__all__"
         read_only_fields=["id","created_at","updated_at"]
         
+
+class PrivatePartiesEventServiceItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=PrivatePartiesEventServiceItem
+        fields="__all__"
+        read_only_fields=["id","created_at","updated_at"]
+
+class SeminarEventServiceItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=SeminarEventServiceItem
+        fields="__all__"
+        read_only_fields=["id","created_at","updated_at"]
+
+class GalleryItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=GalleryItem
+        fields="__all__"
+        read_only_fields=["id","created_at","updated_at"]

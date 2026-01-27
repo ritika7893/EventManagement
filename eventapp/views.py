@@ -1,12 +1,12 @@
 
 from eventapp.permissions import IsAdminRole
-from .models import ConcertEventServiceItem, ContactUs, CorporateEventServiceItem, EntertainmentEventServiceItem, Event, AboutUsItem, AllLog, CardComponentItem, CarsouselItem1, CompanyDetailsItem, DiscoverYourTalentItem, EmailVerification, EventParticipant, PageItem, TopNav1, UserReg
+from .models import ConcertEventServiceItem, ContactUs, CorporateEventServiceItem, EntertainmentEventServiceItem, Event, AboutUsItem, AllLog, CardComponentItem, CarsouselItem1, CompanyDetailsItem, DiscoverYourTalentItem, EmailVerification, EventParticipant, GalleryItem, PageItem, PrivatePartiesEventServiceItem, SeminarEventServiceItem, TopNav1, UserReg
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.utils.timezone import now
-from .serializers import  AboutUsItemSerializer, CardComponentItemSerializer, CarsouselItem1Serializer,  CompanyDetailItemSerializer, ConcertEventServiceItemSerializer, ContactUsSerializer, CorporateEventServiceItemSerializer, DiscoverYourTalentItemSerializer, EntertainmentEventsServiceItemSerializer,  EventParticipantSerializer, EventSerializer,  PageItemSerializer, PageNavbarSerializer, ResendEmailOTPSerializer, ResetPasswordEmailOTPSerializer, ResetPasswordSerializer, TopNav1Serializer, UserRegSerializer
+from .serializers import  AboutUsItemSerializer, CardComponentItemSerializer, CarsouselItem1Serializer,  CompanyDetailItemSerializer, ConcertEventServiceItemSerializer, ContactUsSerializer, CorporateEventServiceItemSerializer, DiscoverYourTalentItemSerializer, EntertainmentEventsServiceItemSerializer,  EventParticipantSerializer, EventSerializer, GalleryItemSerializer,  PageItemSerializer, PageNavbarSerializer, PrivatePartiesEventServiceItemSerializer, ResendEmailOTPSerializer, ResetPasswordEmailOTPSerializer, ResetPasswordSerializer, SeminarEventServiceItemSerializer, TopNav1Serializer, UserRegSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
@@ -1237,6 +1237,300 @@ class ConcertEventServiceItemAPIView(APIView):
                 }
             )
         except ConcertEventServiceItem.DoesNotExist:
+            return Response(
+                {"success": False, "message": "Item not found"},
+                status=404
+            )
+        
+class PrivatePartiesEventServiceItemAPIView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def get_permissions(self):
+        return [AllowAny()] if self.request.method == "GET" else [IsAdminRole()]
+
+    def get(self, request):
+        item_id = request.query_params.get("id")
+
+        if item_id:
+            try:
+                item = PrivatePartiesEventServiceItem.objects.get(id=item_id)
+                serializer = PrivatePartiesEventServiceItemSerializer(item)
+                return Response({"success": True, "data": serializer.data})
+            except PrivatePartiesEventServiceItem.DoesNotExist:
+                return Response(
+                    {"success": False, "message": "Item not found"},
+                    status=404
+                )
+
+        items = PrivatePartiesEventServiceItem.objects.all().order_by("-id")
+        serializer = PrivatePartiesEventServiceItemSerializer(items, many=True)
+        return Response({"success": True, "data": serializer.data})
+
+    def post(self, request):
+        serializer = PrivatePartiesEventServiceItemSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    "success": True,
+                    "message": "Private parties event service item created successfully"
+                },
+                status=201
+            )
+
+        return Response(
+            {"success": False, "errors": serializer.errors},
+            status=400
+        )
+
+    def put(self, request):
+        item_id = request.data.get("id")
+        if not item_id:
+            return Response(
+                {"success": False, "message": "Item ID is required"},
+                status=400
+            )
+
+        try:
+            item = PrivatePartiesEventServiceItem.objects.get(id=item_id)
+        except PrivatePartiesEventServiceItem.DoesNotExist:
+            return Response(
+                {"success": False, "message": "Item not found"},
+                status=404
+            )
+
+        serializer = PrivatePartiesEventServiceItemSerializer(
+            item, data=request.data, partial=True
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    "success": True,
+                    "message": "Private parties event service item updated successfully"
+                }
+            )
+
+        return Response(
+            {"success": False, "errors": serializer.errors},
+            status=400
+        )
+
+    def delete(self, request):
+        item_id = request.data.get("id")
+        if not item_id:
+            return Response(
+                {"success": False, "message": "Item ID is required"},
+                status=400
+            )
+
+        try:
+            PrivatePartiesEventServiceItem.objects.get(id=item_id).delete()
+            return Response(
+                {
+                    "success": True,
+                    "message": "Private parties event service item deleted successfully"
+                }
+            )
+        except PrivatePartiesEventServiceItem.DoesNotExist:
+            return Response(
+                {"success": False, "message": "Item not found"},
+                status=404
+            )
+        
+
+
+class SeminarEventServiceItemAPIView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def get_permissions(self):
+        return [AllowAny()] if self.request.method == "GET" else [IsAdminRole()]
+
+    def get(self, request):
+        item_id = request.query_params.get("id")
+
+        if item_id:
+            try:
+                item = SeminarEventServiceItem.objects.get(id=item_id)
+                serializer = SeminarEventServiceItemSerializer(item)
+                return Response({"success": True, "data": serializer.data})
+            except SeminarEventServiceItem.DoesNotExist:
+                return Response(
+                    {"success": False, "message": "Item not found"},
+                    status=404
+                )
+
+        items = SeminarEventServiceItem.objects.all().order_by("-id")
+        serializer = SeminarEventServiceItemSerializer(items, many=True)
+        return Response({"success": True, "data": serializer.data})
+
+    def post(self, request):
+        serializer = SeminarEventServiceItemSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    "success": True,
+                    "message": "Seminar event service item created successfully"
+                },
+                status=201
+            )
+
+        return Response(
+            {"success": False, "errors": serializer.errors},
+            status=400
+        )
+
+    def put(self, request):
+        item_id = request.data.get("id")
+        if not item_id:
+            return Response(
+                {"success": False, "message": "Item ID is required"},
+                status=400
+            )
+
+        try:
+            item = SeminarEventServiceItem.objects.get(id=item_id)
+        except SeminarEventServiceItem.DoesNotExist:
+            return Response(
+                {"success": False, "message": "Item not found"},
+                status=404
+            )
+
+        serializer = SeminarEventServiceItemSerializer(
+            item, data=request.data, partial=True
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    "success": True,
+                    "message": "Seminar event service item updated successfully"
+                }
+            )
+
+        return Response(
+            {"success": False, "errors": serializer.errors},
+            status=400
+        )
+
+    def delete(self, request):
+        item_id = request.data.get("id")
+        if not item_id:
+            return Response(
+                {"success": False, "message": "Item ID is required"},
+                status=400
+            )
+
+        try:
+            SeminarEventServiceItem.objects.get(id=item_id).delete()
+            return Response(
+                {
+                    "success": True,
+                    "message": "Seminar event service item deleted successfully"
+                }
+            )
+        except SeminarEventServiceItem.DoesNotExist:
+            return Response(
+                {"success": False, "message": "Item not found"},
+                status=404
+            )
+        
+        
+class GalleryItemAPIView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def get_permissions(self):
+        return [AllowAny()] if self.request.method == "GET" else [IsAdminRole()]
+
+    def get(self, request):
+        item_id = request.query_params.get("id")
+
+        if item_id:
+            try:
+                item = GalleryItem.objects.get(id=item_id)
+                serializer = GalleryItemSerializer(item)
+                return Response({"success": True, "data": serializer.data})
+            except GalleryItem.DoesNotExist:
+                return Response(
+                    {"success": False, "message": "Item not found"},
+                    status=404
+                )
+
+        items = GalleryItem.objects.all().order_by("-id")
+        serializer = GalleryItemSerializer(items, many=True)
+        return Response({"success": True, "data": serializer.data})
+
+    def post(self, request):
+        serializer = GalleryItemSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    "success": True,
+                    "message": "Gallery item created successfully"
+                },
+                status=201
+            )
+
+        return Response(
+            {"success": False, "errors": serializer.errors},
+            status=400
+        )
+
+    def put(self, request):
+        item_id = request.data.get("id")
+        if not item_id:
+            return Response(
+                {"success": False, "message": "Item ID is required"},
+                status=400
+            )
+
+        try:
+            item = GalleryItem.objects.get(id=item_id)
+        except GalleryItem.DoesNotExist:
+            return Response(
+                {"success": False, "message": "Item not found"},
+                status=404
+            )
+
+        serializer = GalleryItemSerializer(
+            item, data=request.data, partial=True
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    "success": True,
+                    "message": "Gallery item updated successfully"
+                }
+            )
+
+        return Response(
+            {"success": False, "errors": serializer.errors},
+            status=400
+        )
+
+    def delete(self, request):
+        item_id = request.data.get("id")
+        if not item_id:
+            return Response(
+                {"success": False, "message": "Item ID is required"},
+                status=400
+            )
+
+        try:
+            GalleryItem.objects.get(id=item_id).delete()
+            return Response(
+                {
+                    "success": True,
+                    "message": "Gallery item deleted successfully"
+                }
+            )
+        except GalleryItem.DoesNotExist:
             return Response(
                 {"success": False, "message": "Item not found"},
                 status=404
