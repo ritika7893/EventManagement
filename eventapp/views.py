@@ -1,12 +1,12 @@
 
 from eventapp.permissions import IsAdminRole
-from .models import ContactUs, Event, AboutUsItem, AllLog, CardComponentItem, CarsouselItem1, CompanyDetailsItem, DiscoverYourTalentItem, EmailVerification, EventParticipant, PageItem, TopNav1, UserReg
+from .models import ContactUs, CorporateEventServiceItem, Event, AboutUsItem, AllLog, CardComponentItem, CarsouselItem1, CompanyDetailsItem, DiscoverYourTalentItem, EmailVerification, EventParticipant, PageItem, TopNav1, UserReg
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.utils.timezone import now
-from .serializers import  AboutUsItemSerializer, CardComponentItemSerializer, CarsouselItem1Serializer,  CompanyDetailItemSerializer, ContactUsSerializer, DiscoverYourTalentItemSerializer,  EventParticipantSerializer, EventSerializer,  PageItemSerializer, PageNavbarSerializer, ResendEmailOTPSerializer, ResetPasswordEmailOTPSerializer, ResetPasswordSerializer, TopNav1Serializer, UserRegSerializer
+from .serializers import  AboutUsItemSerializer, CardComponentItemSerializer, CarsouselItem1Serializer,  CompanyDetailItemSerializer, ContactUsSerializer, CorporateEventServiceItemSerializer, DiscoverYourTalentItemSerializer,  EventParticipantSerializer, EventSerializer,  PageItemSerializer, PageNavbarSerializer, ResendEmailOTPSerializer, ResetPasswordEmailOTPSerializer, ResetPasswordSerializer, TopNav1Serializer, UserRegSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
@@ -946,3 +946,100 @@ class ResetPasswordAPIView(APIView):
         if serializer.is_valid():
             return Response(serializer.save())
         return Response(serializer.errors, status=400)
+class CorporateEventServiceItemAPIView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def get_permissions(self):
+        return [AllowAny()] if self.request.method == "GET" else [IsAdminRole()]
+
+    def get(self, request):
+        item_id = request.query_params.get("id")
+
+        if item_id:
+            try:
+                item = CorporateEventServiceItem.objects.get(id=item_id)
+                serializer = CorporateEventServiceItemSerializer(item)
+                return Response({"success": True, "data": serializer.data})
+            except CorporateEventServiceItem.DoesNotExist:
+                return Response(
+                    {"success": False, "message": "Item not found"},
+                    status=404
+                )
+
+        items = CorporateEventServiceItem.objects.all().order_by("-id")
+        serializer = CorporateEventServiceItemSerializer(items, many=True)
+        return Response({"success": True, "data": serializer.data})
+
+
+    def post(self, request):
+        serializer = CorporateEventServiceItemSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    "success": True,
+                    "message": "Corporate event service item created successfully"
+                },
+                status=201
+            )
+
+        return Response(
+            {"success": False, "errors": serializer.errors},
+            status=400
+        )
+
+  
+    def put(self, request):
+        item_id = request.data.get("id")
+        if not item_id:
+            return Response(
+                {"success": False, "message": "Item ID is required"},
+                status=400
+            )
+
+        try:
+            item = CorporateEventServiceItem.objects.get(id=item_id)
+        except CorporateEventServiceItem.DoesNotExist:
+            return Response(
+                {"success": False, "message": "Item not found"},
+                status=404
+            )
+
+        serializer = CorporateEventServiceItemSerializer(
+            item, data=request.data, partial=True
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    "success": True,
+                    "message": "Corporate event service item updated successfully"
+                }
+            )
+
+        return Response(
+            {"success": False, "errors": serializer.errors},
+            status=400
+        )
+
+    def delete(self, request):
+        item_id = request.data.get("id")
+        if not item_id:
+            return Response(
+                {"success": False, "message": "Item ID is required"},
+                status=400
+            )
+
+        try:
+            CorporateEventServiceItem.objects.get(id=item_id).delete()
+            return Response(
+                {
+                    "success": True,
+                    "message": "Corporate event service item deleted successfully"
+                }
+            )
+        except CorporateEventServiceItem.DoesNotExist:
+            return Response(
+                {"success": False, "message": "Item not found"},
+                status=404
+            )

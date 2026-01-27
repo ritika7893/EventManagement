@@ -2,7 +2,7 @@
 from datetime import timezone
 from django.forms import ValidationError
 from rest_framework import serializers
-from .models import  AboutUsItem, ContactUs, Event,AllLog,  CardComponentItem, CarsouselItem1,EventParticipant, CompanyDetailsItem, DiscoverYourTalentItem, EmailVerification, PageItem, TopNav1, UserReg   
+from .models import  AboutUsItem, ContactUs, CorporateEventServiceItem, Event,AllLog,  CardComponentItem, CarsouselItem1,EventParticipant, CompanyDetailsItem, DiscoverYourTalentItem, EmailVerification, PageItem,  TopNav1, UserReg   
 from django.contrib.auth.hashers import make_password
 from .utils import generate_verification_code, send_email_verification_code, send_password_reset_otp, send_resend_email_otp
 from django.utils import timezone
@@ -371,3 +371,10 @@ class ResetPasswordSerializer(serializers.Serializer):
         verification.delete()
 
         return {"message": "Password reset successfully."}
+    
+class CorporateEventServiceItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CorporateEventServiceItem
+        fields = "__all__"
+        read_only_fields = ["id", "created_at", "updated_at"]
+    

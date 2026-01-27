@@ -47,7 +47,7 @@ Your registered email-id is {user.email}.
 
 Your new email verification code is: {code}
 
-⚠️ This code is valid for a limited time only.
+This code is valid for a limited time only.
 
 If you did not request this, please ignore this email.
 
@@ -75,7 +75,7 @@ We received a request to reset your account password.
 
 Your password reset OTP is: {code}
 
-⚠️ This OTP is valid for a limited time.
+ This OTP is valid for a limited time.
 If you did not request a password reset, please ignore this email.
 
 Regards,
