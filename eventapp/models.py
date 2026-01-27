@@ -208,3 +208,19 @@ class CorporateEventServiceItem(models.Model):
     image=models.ImageField(upload_to="corporate_service_images/", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+class EntertainmentEventServiceItem(models.Model):
+    title=models.CharField(max_length=200,blank=True, null=True)
+    description=models.TextField(blank=True, null=True)
+    module=models.JSONField(default=list, blank=True, null=True)
+    image=models.ImageField(upload_to="entertainment_service_images/", blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+class ConcertEventServiceItem(models.Model):
+    title=models.CharField(max_length=200,blank=True, null=True)
+    description=models.TextField(blank=True, null=True)
+    module=models.JSONField(default=list, blank=True, null=True)
+    image=models.ImageField(upload_to="entertainment_service_images/", blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)

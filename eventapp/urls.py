@@ -1,6 +1,6 @@
 from django.urls import path
  
-from .views import AboutUsItemAPIView, CardComponentAPIView, CarsouselItem1APIView, CompanyDetailItemAPIView, ContactUsAPIView, CorporateEventServiceItemAPIView, EventAPIView, EventParticipantAPIView,  LoginAPIView, NavbarAPIView, PageAPIView, RefreshTokenAPIView, ResendEmailOTPView, ResetPasswordAPIView, ResetPasswordEmailOTPAPIView, TopNav1APIView, UserRegAPIView, VerifyEmailCodeAPIView, get_user_id_by_email
+from .views import AboutUsItemAPIView, CardComponentAPIView, CarsouselItem1APIView, CompanyDetailItemAPIView, ConcertEventServiceItemAPIView, ContactUsAPIView, CorporateEventServiceItemAPIView, EntertainmentEventServiceItemAPIView, EventAPIView, EventParticipantAPIView,  LoginAPIView, NavbarAPIView, PageAPIView, RefreshTokenAPIView, ResendEmailOTPView, ResetPasswordAPIView, ResetPasswordEmailOTPAPIView, TopNav1APIView, UserRegAPIView, VerifyEmailCodeAPIView, get_user_id_by_email
 
 urlpatterns = [
     
@@ -22,6 +22,7 @@ urlpatterns = [
     path("resend-email-otp/", ResendEmailOTPView.as_view(), name="resend-email-otp"),
     path("reset-password/", ResetPasswordAPIView.as_view()),
     path("reset-password/email-otp/", ResetPasswordEmailOTPAPIView.as_view(), name="resend-email-otp"),
-    path("corporate-event-service-item/",CorporateEventServiceItemAPIView.as_view(),name="corporate-event-service-item")
-   
+    path("corporate-event-service-item/",CorporateEventServiceItemAPIView.as_view(),name="corporate-event-service-item"),
+    path("entertainment-event-service-item/", EntertainmentEventServiceItemAPIView.as_view(),name="entertainment-event-service"),
+    path("concert-event-service/",ConcertEventServiceItemAPIView.as_view(),name="concert-event-service"),
 ]
