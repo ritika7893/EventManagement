@@ -118,6 +118,19 @@ class EventSerializer(serializers.ModelSerializer):
             "event_id", "created_at", "updated_at",
             "is_past", "is_present", "is_upcoming"
         ]
+    def validate(self, attrs):
+        user = attrs.get("user_id")
+        event = attrs.get("event_id")
+
+        if EventParticipant.objects.filter(
+            user_id=user,
+            event_id=event
+        ).exists():
+            raise serializers.ValidationError(
+                "You have already participated in this event."
+            )
+
+        return attrs
 
     def get_is_past(self, obj):
         if not obj.event_date_time:
@@ -156,6 +169,7 @@ class PageNavbarSerializer(serializers.ModelSerializer):
     def get_children(self, obj):
         children_qs = obj.children.filter(show_in_nav=True).order_by("nav_order")
         return PageNavbarSerializer(children_qs, many=True).data
+    
 class AboutUsItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = AboutUsItem

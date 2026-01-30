@@ -70,8 +70,13 @@ class UserReg(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.user_id:
-            self.user_id = generate_id("USR")
+            while True:
+                user_id = generate_id("USR")
+                if not self.__class__.objects.filter(user_id=user_id).exists():
+                    self.user_id = user_id
+                    break
         super().save(*args, **kwargs)
+
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} ({self.user_id})"
@@ -152,7 +157,6 @@ class CardComponentItem(models.Model):
         return self.title
 
 class CarsouselItem1(models.Model):
-  
     title=models.CharField(max_length=200)
     sub_title=models.CharField(max_length=200,blank=True,null=True)
     description=models.TextField(blank=True,null=True)
@@ -161,7 +165,6 @@ class CarsouselItem1(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 class AboutUsItem(models.Model):
-    page=models.ForeignKey(PageItem,on_delete=models.CASCADE,related_name="aboutus")
     title=models.CharField(max_length=200)
     description=models.TextField(blank=True,null=True)  
     image=models.ImageField(upload_to="aboutus_images/")
@@ -255,3 +258,5 @@ class GalleryItem(models.Model):
     image=models.ImageField(upload_to="gallery_images/", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+

@@ -1,4 +1,5 @@
 
+from django.db import IntegrityError
 from eventapp.permissions import IsAdminRole
 from .models import ConcertEventServiceItem, ContactUs, CorporateEventServiceItem, EntertainmentEventServiceItem, Event, AboutUsItem, AllLog, CardComponentItem, CarsouselItem1, CompanyDetailsItem, DiscoverYourTalentItem, EmailVerification, EventParticipant, GalleryItem, PageItem, PrivatePartiesEventServiceItem, SeminarEventServiceItem, TopNav1, UserReg
 from django.shortcuts import render
@@ -41,12 +42,29 @@ class UserRegAPIView(APIView):
     def post(self, request):
         serializer = UserRegSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.save()
+
+        try:
+            user = serializer.save()
+        except IntegrityError as e:
+            error_message = "Duplicate entry."
+
+            if "phone" in str(e):
+                error_message = "This phone number is already in use."
+            elif "email" in str(e):
+                error_message = "This email is already registered."
+
+            return Response(
+                {
+                    "success": False,
+                    "message": error_message
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         if hasattr(user, "_resent"):
             return Response({
                 "success": False,
-                "message": "Email not verified. Verification code resent."
+                "message": "Email not verified. Registration already exit."
             }, status=status.HTTP_200_OK)
 
         return Response({
@@ -652,7 +670,7 @@ class AboutUsItemAPIView(APIView):
 
 
     def get(self, request):
-        page_id = request.query_params.get("page_id")
+       
         about_id = request.query_params.get("id")
 
         if about_id:
@@ -667,14 +685,7 @@ class AboutUsItemAPIView(APIView):
                 {"success": True, "data": AboutUsItemSerializer(about).data}
             )
 
-        if page_id:
-            about_list = AboutUsItem.objects.filter(
-                page_id=page_id
-            ).order_by("-created_at")
-
-            return Response(
-                {"success": True, "data": AboutUsItemSerializer(about_list, many=True).data}
-            )
+       
 
         about_list = AboutUsItem.objects.all().order_by("-created_at")
         return Response(
@@ -859,11 +870,24 @@ class EventParticipantAPIView(APIView):
     def post(self, request):
         serializer = EventParticipantSerializer(data=request.data)
         if serializer.is_valid():
-            participant = serializer.save()
+            serializer.save()
             return Response(
-                {"success": True, "message": "Participant registered successfully",},
+                {
+                    "success": True,
+                    "message": "Participant registered successfully"
+                },
                 status=status.HTTP_201_CREATED
             )
+
+        if "non_field_errors" in serializer.errors:
+            return Response(
+                {
+                    "success": False,
+                    "message": serializer.errors["non_field_errors"][0]
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     def get(self, request):
             user_id = request.query_params.get("user_id")
