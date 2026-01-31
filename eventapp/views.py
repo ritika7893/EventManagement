@@ -18,7 +18,7 @@ from django.contrib.auth.hashers import make_password,check_password
 class UserRegAPIView(APIView):
     def get_permissions(self):
         if self.request.method == "GET":
-            return [IsAuthenticated()]
+            return [AllowAny()]
         return [AllowAny()]
     def get(self, request):
         user_id = request.query_params.get("user_id")
@@ -905,6 +905,7 @@ class EventParticipantAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
 from rest_framework.decorators import api_view
 @api_view(['GET'])
+@api_view(['GET'])
 def get_user_id_by_email(request):
     email = request.query_params.get("email")
 
@@ -915,15 +916,17 @@ def get_user_id_by_email(request):
         )
 
     try:
-        user = UserReg.objects.get(email=email)
+        user = AllLog.objects.get(email=email)
         return Response(
             {
-                "user_id": user.user_id,
+                "user_id": user.unique_id,   # assuming unique_id is the user ID
+                "email": user.email,
+                "is_verified": user.is_verified,
                 "message": "User found"
             },
             status=status.HTTP_200_OK
         )
-    except UserReg.DoesNotExist:
+    except AllLog.DoesNotExist:
         return Response(
             {"message": "User not found"},
             status=status.HTTP_404_NOT_FOUND
