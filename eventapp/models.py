@@ -158,9 +158,12 @@ class CardComponentItem(models.Model):
 
 class CarsouselItem1(models.Model):
     title=models.CharField(max_length=200)
+    title_hi = models.CharField(max_length=200,blank=True,null=True)
     sub_title=models.CharField(max_length=200,blank=True,null=True)
+    sub_title_hi = models.CharField(max_length=200,blank=True,null=True)
     description=models.TextField(blank=True,null=True)
-    image=models.ImageField(upload_to="carousel_images/")
+    description_hi = models.TextField(blank=True, null=True)
+    image=models.ImageField(upload_to="carousel_images/",blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -210,8 +213,11 @@ class ContactUs(models.Model):
 
 class CorporateEventServiceItem(models.Model):
     title=models.CharField(max_length=200,blank=True, null=True)
+    title_hi = models.CharField(max_length=200,blank=True,null=True)
     description=models.TextField(blank=True, null=True)
+    description_hi = models.TextField(blank=True, null=True)
     module=models.JSONField(default=list, blank=True, null=True)
+    module_hi=models.JSONField(default=list, blank=True, null=True)
     image=models.ImageField(upload_to="corporate_service_images/", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

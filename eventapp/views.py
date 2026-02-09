@@ -603,33 +603,48 @@ class CarsouselItem1APIView(APIView):
 
    
     def get(self, request):
-        page_id = request.query_params.get("page_id")
+        lang = request.query_params.get("lang")  # None if not sent
         carousel_id = request.query_params.get("id")
+        page_id = request.query_params.get("page_id")
+
+        def filter_by_lang(data):
+            # If lang NOT provided → return full serializer data
+            if not lang:
+                return data
+
+            if lang == "hi":
+                data.pop("title", None)
+                data.pop("sub_title", None)
+                data.pop("description", None)
+            else:  # English
+                data.pop("title_hi", None)
+                data.pop("sub_title_hi", None)
+                data.pop("description_hi", None)
+
+            return data
 
         if carousel_id:
             carousel = CarsouselItem1.objects.filter(id=carousel_id).first()
             if not carousel:
-                return Response({"success": False, "message": "Not found"}, status=404)
+                return Response(
+                    {"success": False, "message": "Carousel item not found"},
+                    status=404
+                )
 
-            return Response({"success": True, "data": CarsouselItem1Serializer(carousel).data})
+            serializer = CarsouselItem1Serializer(carousel)
+            data = filter_by_lang(serializer.data)
+
+            return Response({"success": True, "data": data})
+
+        queryset = CarsouselItem1.objects.all()
 
         if page_id:
-            return Response({
-                "success": True,
-                "data": CarsouselItem1Serializer(
-                    CarsouselItem1.objects.filter(page_id=page_id),
-                    many=True
-                ).data
-            })
+            queryset = queryset.filter(page_id=page_id)
 
-        return Response({
-            "success": True,
-            "data": CarsouselItem1Serializer(
-                CarsouselItem1.objects.all(),
-                many=True
-            ).data
-        })
+        serializer = CarsouselItem1Serializer(queryset, many=True)
+        data = [filter_by_lang(item) for item in serializer.data]
 
+        return Response({"success": True, "data": data})
    
     def post(self, request):
         serializer = CarsouselItem1Serializer(data=request.data)
@@ -671,19 +686,25 @@ class AboutUsItemAPIView(APIView):
 
 
     def get(self, request):
-        lang = request.query_params.get("lang", "en")
+        lang = request.query_params.get("lang")  # None if not sent
         about_id = request.query_params.get("id")
 
-        def format_about(obj):
-            return {
-                "id": obj.id,
-                "title": obj.title_hi if lang == "hi" else obj.title,
-                "description": obj.description_hi if lang == "hi" else obj.description,
-                "image": request.build_absolute_uri(obj.image.url) if obj.image else None,
-                "module": obj.module_hi if lang == "hi" else obj.module,
-                "created_at": obj.created_at,
-                "updated_at": obj.updated_at,
-            }
+        def filter_by_lang(data):
+            # if lang is NOT provided → return full serializer data
+            if not lang:
+                return data
+
+            # if lang IS provided → remove other language fields
+            if lang == "hi":
+                data.pop("title", None)
+                data.pop("description", None)
+                data.pop("module", None)
+            else:  # default english
+                data.pop("title_hi", None)
+                data.pop("description_hi", None)
+                data.pop("module_hi", None)
+
+            return data
 
         if about_id:
             about = AboutUsItem.objects.filter(id=about_id).first()
@@ -693,16 +714,17 @@ class AboutUsItemAPIView(APIView):
                     status=404
                 )
 
-            return Response(
-                {"success": True, "data": format_about(about)}
-            )
+            serializer = AboutUsItemSerializer(about)
+            data = filter_by_lang(serializer.data)
+
+            return Response({"success": True, "data": data})
 
         about_list = AboutUsItem.objects.all().order_by("-created_at")
-        data = [format_about(item) for item in about_list]
+        serializer = AboutUsItemSerializer(about_list, many=True)
 
-        return Response(
-            {"success": True, "data": data}
-        )
+        data = [filter_by_lang(item) for item in serializer.data]
+
+        return Response({"success": True, "data": data})
 
 
     def post(self, request):
@@ -1007,22 +1029,43 @@ class CorporateEventServiceItemAPIView(APIView):
         return [AllowAny()] if self.request.method == "GET" else [IsAdminRole()]
 
     def get(self, request):
+        lang = request.query_params.get("lang")  # None if not sent
         item_id = request.query_params.get("id")
 
+        def filter_by_lang(data):
+            # If lang NOT provided → return full serializer data
+            if not lang:
+                return data
+
+            if lang == "hi":
+                data.pop("title", None)
+                data.pop("description", None)
+                data.pop("module", None)
+            else:  # English
+                data.pop("title_hi", None)
+                data.pop("description_hi", None)
+                data.pop("module_hi", None)
+
+            return data
+
         if item_id:
-            try:
-                item = CorporateEventServiceItem.objects.get(id=item_id)
-                serializer = CorporateEventServiceItemSerializer(item)
-                return Response({"success": True, "data": serializer.data})
-            except CorporateEventServiceItem.DoesNotExist:
+            item = CorporateEventServiceItem.objects.filter(id=item_id).first()
+            if not item:
                 return Response(
                     {"success": False, "message": "Item not found"},
                     status=404
                 )
 
+            serializer = CorporateEventServiceItemSerializer(item)
+            data = filter_by_lang(serializer.data)
+
+            return Response({"success": True, "data": data})
+
         items = CorporateEventServiceItem.objects.all().order_by("-id")
         serializer = CorporateEventServiceItemSerializer(items, many=True)
-        return Response({"success": True, "data": serializer.data})
+        data = [filter_by_lang(item) for item in serializer.data]
+
+        return Response({"success": True, "data": data})
 
 
     def post(self, request):
