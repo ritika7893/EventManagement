@@ -166,9 +166,12 @@ class CarsouselItem1(models.Model):
 
 class AboutUsItem(models.Model):
     title=models.CharField(max_length=200)
+    title_hi = models.CharField(max_length=200,blank=True,null=True)
     description=models.TextField(blank=True,null=True)  
-    image=models.ImageField(upload_to="aboutus_images/")
+    description_hi = models.TextField(blank=True, null=True)
+    image=models.ImageField(upload_to="aboutus_images/",blank=True, null=True)
     module=models.JSONField(default=list, blank=True, null=True)
+    module_hi=models.JSONField(default=list, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -259,4 +262,21 @@ class GalleryItem(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+class Blog(models.Model):
+    STATUS_CHOICES = (
+        ('draft', 'Draft'),
+        ('published', 'Published'),
+    )
 
+    title = models.CharField(max_length=255)
+    summary = models.TextField()
+    description = models.TextField()
+    category = models.CharField(max_length=100)
+    video_url = models.URLField(blank=True, null=True)
+    thumbnail = models.ImageField(upload_to='blog_thumbnails/', blank=True, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.title

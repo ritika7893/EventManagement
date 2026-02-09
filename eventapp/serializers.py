@@ -2,7 +2,7 @@
 from datetime import timezone
 from django.forms import ValidationError
 from rest_framework import serializers
-from .models import  AboutUsItem, ConcertEventServiceItem, ContactUs, CorporateEventServiceItem, EntertainmentEventServiceItem, Event,AllLog,  CardComponentItem, CarsouselItem1,EventParticipant, CompanyDetailsItem, DiscoverYourTalentItem, EmailVerification, GalleryItem, PageItem, PrivatePartiesEventServiceItem, SeminarEventServiceItem,  TopNav1, UserReg   
+from .models import  AboutUsItem, Blog, ConcertEventServiceItem, ContactUs, CorporateEventServiceItem, EntertainmentEventServiceItem, Event,AllLog,  CardComponentItem, CarsouselItem1,EventParticipant, CompanyDetailsItem, DiscoverYourTalentItem, EmailVerification, GalleryItem, PageItem, PrivatePartiesEventServiceItem, SeminarEventServiceItem,  TopNav1, UserReg   
 from django.contrib.auth.hashers import make_password
 from .utils import generate_verification_code, send_email_verification_code, send_password_reset_otp, send_resend_email_otp
 from django.utils import timezone
@@ -423,3 +423,7 @@ class GalleryItemSerializer(serializers.ModelSerializer):
         model=GalleryItem
         fields="__all__"
         read_only_fields=["id","created_at","updated_at"]
+class BlogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Blog
+        fields = "__all__"

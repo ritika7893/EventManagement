@@ -22,7 +22,7 @@ Your registered email-id is {user.email}.
 Your email verification code is: {code}
 
 Regards
-Xyz
+BrEvents
 """
 
     send_mail(
@@ -52,7 +52,7 @@ This code is valid for a limited time only.
 If you did not request this, please ignore this email.
 
 Regards,
-Xyz
+BrEvents
 """
 
     send_mail(
@@ -79,7 +79,7 @@ Your password reset OTP is: {code}
 If you did not request a password reset, please ignore this email.
 
 Regards,
-Xyz
+BrEvents
 """
 
     send_mail(
@@ -88,4 +88,43 @@ Xyz
         from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=[user.email],
         fail_silently=False
+    )
+
+
+
+def send_event_participation_email(user, event):
+    """
+    Sends event participation confirmation email to user
+    """
+
+    if not user.email:
+        return  # no email, silently skip
+
+    subject = f"🎉 Registration Confirmed: {event.event_name}"
+
+    message = f"""
+Dear {user.full_name or "Participant"},
+
+You have been successfully registered for the event.
+
+📌 Event Details:
+------------------------
+Event Name : {event.event_name}
+Event Type : {event.event_type or "N/A"}
+Date & Time: {event.event_date_time.strftime('%d %B %Y, %I:%M %p') if event.event_date_time else "To be announced"}
+Venue      : {event.venue or "To be announced"}
+
+We’re excited to have you join us!
+Please keep an eye on your email for further updates.
+
+Best regards,
+BrEvents
+"""
+
+    send_mail(
+        subject=subject,
+        message=message,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[user.email],
+        fail_silently=True,
     )

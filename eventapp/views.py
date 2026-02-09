@@ -1,13 +1,14 @@
 
 from django.db import IntegrityError
 from eventapp.permissions import IsAdminRole
-from .models import ConcertEventServiceItem, ContactUs, CorporateEventServiceItem, EntertainmentEventServiceItem, Event, AboutUsItem, AllLog, CardComponentItem, CarsouselItem1, CompanyDetailsItem, DiscoverYourTalentItem, EmailVerification, EventParticipant, GalleryItem, PageItem, PrivatePartiesEventServiceItem, SeminarEventServiceItem, TopNav1, UserReg
+from .utils import send_event_participation_email
+from .models import Blog, ConcertEventServiceItem, ContactUs, CorporateEventServiceItem, EntertainmentEventServiceItem, Event, AboutUsItem, AllLog, CardComponentItem, CarsouselItem1, CompanyDetailsItem, DiscoverYourTalentItem, EmailVerification, EventParticipant, GalleryItem, PageItem, PrivatePartiesEventServiceItem, SeminarEventServiceItem, TopNav1, UserReg
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.utils.timezone import now
-from .serializers import  AboutUsItemSerializer, CardComponentItemSerializer, CarsouselItem1Serializer,  CompanyDetailItemSerializer, ConcertEventServiceItemSerializer, ContactUsSerializer, CorporateEventServiceItemSerializer, DiscoverYourTalentItemSerializer, EntertainmentEventsServiceItemSerializer,  EventParticipantSerializer, EventSerializer, GalleryItemSerializer,  PageItemSerializer, PageNavbarSerializer, PrivatePartiesEventServiceItemSerializer, ResendEmailOTPSerializer, ResetPasswordEmailOTPSerializer, ResetPasswordSerializer, SeminarEventServiceItemSerializer, TopNav1Serializer, UserRegSerializer
+from .serializers import  AboutUsItemSerializer, BlogSerializer, CardComponentItemSerializer, CarsouselItem1Serializer,  CompanyDetailItemSerializer, ConcertEventServiceItemSerializer, ContactUsSerializer, CorporateEventServiceItemSerializer, DiscoverYourTalentItemSerializer, EntertainmentEventsServiceItemSerializer,  EventParticipantSerializer, EventSerializer, GalleryItemSerializer,  PageItemSerializer, PageNavbarSerializer, PrivatePartiesEventServiceItemSerializer, ResendEmailOTPSerializer, ResetPasswordEmailOTPSerializer, ResetPasswordSerializer, SeminarEventServiceItemSerializer, TopNav1Serializer, UserRegSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
@@ -670,8 +671,19 @@ class AboutUsItemAPIView(APIView):
 
 
     def get(self, request):
-       
+        lang = request.query_params.get("lang", "en")
         about_id = request.query_params.get("id")
+
+        def format_about(obj):
+            return {
+                "id": obj.id,
+                "title": obj.title_hi if lang == "hi" else obj.title,
+                "description": obj.description_hi if lang == "hi" else obj.description,
+                "image": request.build_absolute_uri(obj.image.url) if obj.image else None,
+                "module": obj.module_hi if lang == "hi" else obj.module,
+                "created_at": obj.created_at,
+                "updated_at": obj.updated_at,
+            }
 
         if about_id:
             about = AboutUsItem.objects.filter(id=about_id).first()
@@ -682,15 +694,16 @@ class AboutUsItemAPIView(APIView):
                 )
 
             return Response(
-                {"success": True, "data": AboutUsItemSerializer(about).data}
+                {"success": True, "data": format_about(about)}
             )
 
-       
-
         about_list = AboutUsItem.objects.all().order_by("-created_at")
+        data = [format_about(item) for item in about_list]
+
         return Response(
-            {"success": True, "data": AboutUsItemSerializer(about_list, many=True).data}
+            {"success": True, "data": data}
         )
+
 
     def post(self, request):
         serializer = AboutUsItemSerializer(data=request.data)
@@ -865,12 +878,24 @@ class EventParticipantAPIView(APIView):
 
     def get_permissions(self):
         if self.request.method == "GET":
-            return [IsAuthenticated()]  # only logged-in users
+            return [IsAuthenticated()] 
         return [AllowAny()] 
     def post(self, request):
         serializer = EventParticipantSerializer(data=request.data)
+
         if serializer.is_valid():
-            serializer.save()
+            participant = serializer.save()
+
+      
+            event = Event.objects.get(
+                event_id=participant.event_id.event_id
+            )
+
+            send_event_participation_email(
+                user=participant.user_id,
+                event=event
+            )
+
             return Response(
                 {
                     "success": True,
@@ -889,6 +914,7 @@ class EventParticipantAPIView(APIView):
             )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     def get(self, request):
             user_id = request.query_params.get("user_id")
             event_id = request.query_params.get("event_id")
@@ -1562,3 +1588,89 @@ class GalleryItemAPIView(APIView):
                 {"success": False, "message": "Item not found"},
                 status=404
             )
+            
+class BlogAPIView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def get_permissions(self):
+        return [AllowAny()] if self.request.method == "GET" else [IsAdminRole()]
+
+    def get(self, request):
+        blog_id = request.query_params.get("id")
+
+        if blog_id:
+            blog = Blog.objects.filter(id=blog_id).first()
+            if not blog:
+                return Response(
+                    {"success": False, "message": "Blog not found"},
+                    status=404
+                )
+
+            return Response(
+                {"success": True, "data": BlogSerializer(blog).data}
+            )
+
+        blog_list = Blog.objects.all().order_by("-created_at")
+        return Response(
+            {"success": True, "data": BlogSerializer(blog_list, many=True).data}
+        )
+
+    def post(self, request):
+        serializer = BlogSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"success": True, "message": "Blog created successfully"},
+                status=201
+            )
+
+        return Response(
+            {"success": False, "errors": serializer.errors},
+            status=400
+        )
+
+    def put(self, request):
+        blog_id = request.data.get("id")
+        if not blog_id:
+            return Response(
+                {"success": False, "message": "id is required"},
+                status=400
+            )
+
+        blog = Blog.objects.filter(id=blog_id).first()
+        if not blog:
+            return Response(
+                {"success": False, "message": "Blog not found"},
+                status=404
+            )
+
+        serializer = BlogSerializer(blog, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"success": True, "message": "Blog updated successfully"}
+            )
+
+        return Response(
+            {"success": False, "errors": serializer.errors},
+            status=400
+        )
+
+    def delete(self, request):
+        blog_id = request.data.get("id")
+        if not blog_id:
+            return Response(
+                {"success": False, "message": "id is required"},
+                status=400
+            )
+
+        deleted, _ = Blog.objects.filter(id=blog_id).delete()
+        if not deleted:
+            return Response(
+                {"success": False, "message": "Blog not found"},
+                status=404
+            )
+
+        return Response(
+            {"success": True, "message": "Blog deleted successfully"}
+        )

@@ -1,6 +1,6 @@
 from django.urls import path
  
-from .views import AboutUsItemAPIView, CardComponentAPIView, CarsouselItem1APIView, CompanyDetailItemAPIView, ConcertEventServiceItemAPIView, ContactUsAPIView, CorporateEventServiceItemAPIView, EntertainmentEventServiceItemAPIView, EventAPIView, EventParticipantAPIView, GalleryItemAPIView,  LoginAPIView, NavbarAPIView, PageAPIView, PrivatePartiesEventServiceItemAPIView, RefreshTokenAPIView, ResendEmailOTPView, ResetPasswordAPIView, ResetPasswordEmailOTPAPIView, SeminarEventServiceItemAPIView, TopNav1APIView, UserRegAPIView, VerifyEmailCodeAPIView, get_user_id_by_email
+from .views import AboutUsItemAPIView, BlogAPIView, CardComponentAPIView, CarsouselItem1APIView, CompanyDetailItemAPIView, ConcertEventServiceItemAPIView, ContactUsAPIView, CorporateEventServiceItemAPIView, EntertainmentEventServiceItemAPIView, EventAPIView, EventParticipantAPIView, GalleryItemAPIView,  LoginAPIView, NavbarAPIView, PageAPIView, PrivatePartiesEventServiceItemAPIView, RefreshTokenAPIView, ResendEmailOTPView, ResetPasswordAPIView, ResetPasswordEmailOTPAPIView, SeminarEventServiceItemAPIView, TopNav1APIView, UserRegAPIView, VerifyEmailCodeAPIView, get_user_id_by_email
 
 urlpatterns = [
     
@@ -28,4 +28,5 @@ urlpatterns = [
     path("private-parties-event-service/",PrivatePartiesEventServiceItemAPIView.as_view(), name="private-parties-event-service"),
     path( "seminar-event-service/",SeminarEventServiceItemAPIView.as_view(), name="seminar-event-service"),
     path("gallery-items/",GalleryItemAPIView.as_view(),name="gallery-items"),
+     path('blogs/',BlogAPIView.as_view(),name='blog-items'),
 ]
