@@ -131,7 +131,7 @@ We’re excited to have you join us!
 Please keep an eye on your email for further updates.
 
 Best regards,
-BrEvents
+BrEvent
 """
 
     send_mail(

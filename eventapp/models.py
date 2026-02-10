@@ -192,6 +192,7 @@ class EventParticipant(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     full_name = models.CharField(max_length=100, null=True, blank=True)
     email = models.EmailField(null=True, blank=True)
+    participant_type = models.CharField(max_length=50, blank=True, null=True)
     phone = models.CharField(max_length=15, null=True, blank=True)
 
     def __str__(self):

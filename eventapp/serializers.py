@@ -192,11 +192,11 @@ class TopNav1Serializer(serializers.ModelSerializer):
 class EventParticipantSerializer(serializers.ModelSerializer):
     user_id = serializers.CharField(required=False, write_only=True)
     event_id = serializers.CharField(write_only=True)
-
+   
     full_name = serializers.CharField(required=False,write_only=True)
     email = serializers.EmailField(required=False,write_only=True)
     phone = serializers.CharField(required=False,write_only=True)
-
+    participant_type = serializers.CharField(required=False)
     user_detail = serializers.SerializerMethodField(read_only=True)
     event_detail = serializers.SerializerMethodField(read_only=True)
 
@@ -209,7 +209,7 @@ class EventParticipantSerializer(serializers.ModelSerializer):
             "full_name",
             "email",
             "phone",
-            "user_detail",
+            "user_detail","participant_type",
             "event_detail",
             "created_at",
         ]
@@ -258,6 +258,7 @@ class EventParticipantSerializer(serializers.ModelSerializer):
             full_name=validated_data.get("full_name"),
             email=validated_data.get("email"),
             phone=validated_data.get("phone"),
+            participant_type=validated_data.get("participant_type", "audience")
         )
 
         return participant
