@@ -861,14 +861,11 @@ class EventParticipantAPIView(APIView):
         if serializer.is_valid():
             participant = serializer.save()
 
-      
-            event = Event.objects.get(
-                event_id=participant.event_id.event_id
-            )
-
             send_event_participation_email(
                 user=participant.user_id,
-                event=event
+                guest_email=participant.email,
+                guest_name=participant.full_name,
+                event=participant.event_id
             )
 
             return Response(
@@ -877,15 +874,6 @@ class EventParticipantAPIView(APIView):
                     "message": "Participant registered successfully"
                 },
                 status=status.HTTP_201_CREATED
-            )
-
-        if "non_field_errors" in serializer.errors:
-            return Response(
-                {
-                    "success": False,
-                    "message": serializer.errors["non_field_errors"][0]
-                },
-                status=status.HTTP_400_BAD_REQUEST
             )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -905,8 +893,7 @@ class EventParticipantAPIView(APIView):
             serializer = EventParticipantSerializer(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
 from rest_framework.decorators import api_view
-@api_view(['GET'])
-@api_view(['GET'])
+@api_view(["GET"])
 def get_user_id_by_email(request):
     email = request.query_params.get("email")
 
@@ -917,17 +904,23 @@ def get_user_id_by_email(request):
         )
 
     try:
-        user = AllLog.objects.get(email=email)
+        user = UserReg.objects.get(email=email)
+
+        allog = AllLog.objects.filter(email=email).order_by("-id").first()
+
         return Response(
             {
-                "user_id": user.unique_id,   # assuming unique_id is the user ID
+                "user_id": user.user_id,
                 "email": user.email,
-                "is_verified": user.is_verified,
+                "phone": user.phone,
+                "full_name": user.full_name,
+                "is_verified": allog.is_verified if allog else False,
                 "message": "User found"
             },
             status=status.HTTP_200_OK
         )
-    except AllLog.DoesNotExist:
+
+    except UserReg.DoesNotExist:
         return Response(
             {"message": "User not found"},
             status=status.HTTP_404_NOT_FOUND

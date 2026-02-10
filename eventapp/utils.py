@@ -92,18 +92,31 @@ BrEvents
 
 
 
-def send_event_participation_email(user, event):
+def send_event_participation_email(user=None, guest_email=None, guest_name=None, event=None):
     """
-    Sends event participation confirmation email to user
+    Sends event participation confirmation email
+    Supports:
+    - Registered users
+    - Guest users
     """
 
-    if not user.email:
-        return  # no email, silently skip
+    # Registered user
+    if user and user.email:
+        to_email = user.email
+        name = user.full_name or "Participant"
+
+    # Guest user
+    elif guest_email:
+        to_email = guest_email
+        name = guest_name or "Participant"
+
+    else:
+        return  # no email available
 
     subject = f"🎉 Registration Confirmed: {event.event_name}"
 
     message = f"""
-Dear {user.full_name or "Participant"},
+Dear {name},
 
 You have been successfully registered for the event.
 
@@ -125,6 +138,6 @@ BrEvents
         subject=subject,
         message=message,
         from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[user.email],
+        recipient_list=[to_email],
         fail_silently=True,
     )

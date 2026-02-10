@@ -190,10 +190,12 @@ class TopNav1Serializer(serializers.ModelSerializer):
         read_only_fields = ["id", "created_at", "updated_at"]
 
 class EventParticipantSerializer(serializers.ModelSerializer):
-
-    user_id = serializers.CharField(write_only=True)
+    user_id = serializers.CharField(required=False, write_only=True)
     event_id = serializers.CharField(write_only=True)
 
+    full_name = serializers.CharField(required=False,write_only=True)
+    email = serializers.EmailField(required=False,write_only=True)
+    phone = serializers.CharField(required=False,write_only=True)
 
     user_detail = serializers.SerializerMethodField(read_only=True)
     event_detail = serializers.SerializerMethodField(read_only=True)
@@ -204,43 +206,80 @@ class EventParticipantSerializer(serializers.ModelSerializer):
             "id",
             "user_id",
             "event_id",
+            "full_name",
+            "email",
+            "phone",
             "user_detail",
             "event_detail",
-            "created_at"
+            "created_at",
         ]
 
     def create(self, validated_data):
-        user_id = validated_data.pop("user_id")
+        user_id = validated_data.pop("user_id", None)
         event_id = validated_data.pop("event_id")
 
-        try:
-            user = UserReg.objects.get(user_id=user_id)
-        except UserReg.DoesNotExist:
-            raise serializers.ValidationError({"user_id": "Invalid user_id"})
-
+        # fetch event
         try:
             event = Event.objects.get(event_id=event_id)
         except Event.DoesNotExist:
             raise serializers.ValidationError({"event_id": "Invalid event_id"})
 
-        # prevent duplicate entry
-        participant, created = EventParticipant.objects.get_or_create(
-            user_id=user,
-            event_id=event
-        )
+        user = None
 
-        if not created:
+        # REGISTERED USER
+        if user_id:
+            try:
+                user = UserReg.objects.get(user_id=user_id)
+            except UserReg.DoesNotExist:
+                raise serializers.ValidationError({"user_id": "Invalid user_id"})
+
+        # GUEST USER
+        else:
+            if not all([
+                validated_data.get("full_name"),
+                validated_data.get("email"),
+                validated_data.get("phone"),
+            ]):
+                raise serializers.ValidationError(
+                    "full_name, email and phone are required for guest users"
+                )
+
+        # DUPLICATE PREVENTION (🔥 FIXED)
+        if EventParticipant.objects.filter(
+            event_id=event,
+            user_id=user,
+            email=validated_data.get("email"),
+        ).exists():
             raise serializers.ValidationError("User already joined this event")
+
+        participant = EventParticipant.objects.create(
+            user_id=user,
+            event_id=event,
+            full_name=validated_data.get("full_name"),
+            email=validated_data.get("email"),
+            phone=validated_data.get("phone"),
+        )
 
         return participant
 
     def get_user_detail(self, obj):
+    # Registered user
+        if obj.user_id:
+            return {
+                "user_id": obj.user_id.user_id,
+                "full_name": obj.user_id.full_name,
+                "email": obj.user_id.email,
+                "phone": obj.user_id.phone,
+                "user_type": obj.user_id.user_type,
+            }
+
+        # Guest user (user_id is NULL)
         return {
-            "user_id": obj.user_id.user_id,
-            "full_name": obj.user_id.full_name,
-            "email": obj.user_id.email,
-            "phone": obj.user_id.phone,
-            "user_type": obj.user_id.user_type,
+            "user_id": None,
+            "full_name": obj.full_name,
+            "email": obj.email,
+            "phone": obj.phone,
+            "user_type": "guest",
         }
 
     def get_event_detail(self, obj):
@@ -251,6 +290,7 @@ class EventParticipantSerializer(serializers.ModelSerializer):
             "event_date_time": obj.event_id.event_date_time,
             "venue": obj.event_id.venue,
         }
+    
 
 class ContactUsSerializer(serializers.ModelSerializer):
     class Meta:

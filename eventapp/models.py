@@ -187,15 +187,17 @@ class TopNav1(models.Model):
         return self.text
     
 class EventParticipant(models.Model):
-    user_id = models.ForeignKey(UserReg, on_delete=models.CASCADE, related_name="event_participations",to_field='user_id')
+    user_id = models.ForeignKey(UserReg, on_delete=models.CASCADE, related_name="event_participations",to_field='user_id',blank=True, null=True)
     event_id= models.ForeignKey(Event, on_delete=models.CASCADE, related_name="participants",to_field='event_id')
     created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        unique_together = ('user_id', 'event_id')
+    full_name = models.CharField(max_length=100, null=True, blank=True)
+    email = models.EmailField(null=True, blank=True)
+    phone = models.CharField(max_length=15, null=True, blank=True)
 
     def __str__(self):
-        return f"{self.user.user_id} → {self.event.event_name}"
+        if self.user_id:
+            return f"{self.user_id.user_id} → {self.event_id.event_name}"
+        return f"Guest → {self.event_id.event_name}"
 class ContactUs(models.Model):
     full_name = models.CharField(max_length=100)
     email = models.EmailField(blank=True, null=True)
