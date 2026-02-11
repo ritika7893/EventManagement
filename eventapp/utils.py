@@ -1,5 +1,6 @@
 import random
-
+from django.utils import timezone
+from .models import Event
 def generate_verification_code():
     return str(random.randint(100000, 999999))
 
@@ -140,4 +141,68 @@ BrEvent
         from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=[to_email],
         fail_silently=True,
+    )
+
+def send_post_verification_event_notification(user):
+    """
+    Sends a "thank you for verifying" email with information about upcoming events.
+    This is sent only once after the initial email verification is complete.
+    """
+   
+    
+    upcoming_events = Event.objects.filter(
+        event_date_time__gte=timezone.now()
+    ).order_by('event_date_time')[:3]  # Limit to next 3 events
+    
+    # Even if there are no events, we can send a simple "you're verified" email.
+    subject = "Your BrEvents Account is Now Active!"
+    
+    if upcoming_events:
+        # Format events list for email
+        events_list = ""
+        for event in upcoming_events:
+            event_date = event.event_date_time.strftime('%d %B %Y, %I:%M %p') if event.event_date_time else "To be announced"
+            events_list += f"""
+📅 {event.event_name}
+   Date & Time: {event_date}
+   Venue: {event.venue or "To be announced"}
+   Type: {event.event_type or "N/A"}
+   {"-" * 40}
+"""
+        
+        message = f"""
+Hello {user.full_name or "User"},
+
+Thank you for verifying your email address! Your BrEvents account is now fully active.
+
+You're all set to explore and register for our events. Here are some upcoming opportunities you might be interested in:
+
+{events_list}
+
+Login to your account to secure your spot at these events or discover more.
+
+Best regards,
+The BrEvents Team
+"""
+    else:
+        # Fallback email if there are no upcoming events
+        message = f"""
+Hello {user.full_name or "User"},
+
+Thank you for verifying your email address! Your BrEvents account is now fully active.
+
+You're all set to explore our platform. Check back soon for new and exciting events you can participate in.
+
+Login to your account to see what's new.
+
+Best regards,
+The BrEvents Team
+"""
+    
+    send_mail(
+        subject=subject,
+        message=message,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[user.email],
+        fail_silently=True, # Set to False in development to debug email issues
     )

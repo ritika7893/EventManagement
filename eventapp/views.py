@@ -2,7 +2,7 @@
 from urllib import request
 from django.db import IntegrityError
 from eventapp.permissions import IsAdminRole
-from .utils import send_event_participation_email
+from .utils import send_event_participation_email, send_post_verification_event_notification
 from .models import Blog, ConcertEventServiceItem, ContactUs, CorporateEventServiceItem, EntertainmentEventServiceItem, Event, AboutUsItem, AllLog, CardComponentItem, CarsouselItem1, CompanyDetailsItem, DiscoverYourTalentItem, EmailVerification, EventParticipant, GalleryItem, PageItem, PrivatePartiesEventServiceItem, SeminarEventServiceItem, TopNav1, UserReg
 from django.shortcuts import render
 from rest_framework.views import APIView
@@ -139,7 +139,16 @@ class VerifyEmailCodeAPIView(APIView):
 
         # Mark AllLog verified
         AllLog.objects.filter(email=email).update(is_verified=True)
-
+        if not verification.post_verification_notification_sent:
+            try:
+                send_post_verification_event_notification(verification.user)
+                # Mark that we've sent the notification so it doesn't send again
+                verification.post_verification_notification_sent = True
+                verification.save(update_fields=['post_verification_notification_sent'])
+            except Exception as e:
+                # Log the error but don't fail the verification process
+                # In a real app, you'd use proper logging: import logging; logger.error(...)
+                print(f"Failed to send post-verification email: {e}")
         return Response(
             {"success": True, "message": "Email Code verified successfully"}
         )

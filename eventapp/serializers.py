@@ -250,7 +250,7 @@ class EventParticipantSerializer(serializers.ModelSerializer):
             user_id=user,
             email=validated_data.get("email"),
         ).exists():
-            raise serializers.ValidationError("User already joined this event")
+            raise serializers.ValidationError("Participant has already joined this event.")
 
         participant = EventParticipant.objects.create(
             user_id=user,

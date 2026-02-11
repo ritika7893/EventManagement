@@ -85,7 +85,7 @@ class EmailVerification(models.Model):
     user = models.ForeignKey("UserReg",on_delete=models.CASCADE,related_name="email_verifications")
     verification_code = models.CharField(max_length=6)
     is_verified = models.BooleanField(default=False)
-
+    post_verification_notification_sent = models.BooleanField(default=False) 
     created_at = models.DateTimeField(auto_now_add=True)
     verified_at = models.DateTimeField(null=True, blank=True)
 
