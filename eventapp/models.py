@@ -43,6 +43,7 @@ class UserReg(models.Model):
     user_id = models.CharField(max_length=20,unique=True,editable=False)
     user_type=models.CharField( max_length=100,choices=USER_TYPE_CHOICES,default='individual')
     team_name=models.CharField(max_length=100,blank=True, null=True)
+
     full_name = models.CharField(max_length=100,null=True, blank=True)
     gender= models.CharField(max_length=100,null=True, blank=True)
     email = models.EmailField(unique=True,null=True, blank=True)
@@ -52,7 +53,7 @@ class UserReg(models.Model):
     profile_image = models.ImageField(upload_to='profile_images/', null=True, blank=True)
     social_media_link = models.JSONField(default=list, null=True, blank=True)
     additional_link = models.JSONField(default=list, null=True, blank=True)
-    portfolio_file=models.FileField(upload_to="",blank=True,null=True)
+    portfolio_file=models.FileField(upload_to="portfolio_file/",blank=True,null=True)
     national_level_certificate = models.FileField(upload_to="portfolio_file/",blank=True,null=True)
     internation_level_certificate_award=models.FileField(upload_to="international_level_certificate_award/",blank=True,null=True)
     state_level_certificate=models.FileField(upload_to="state_level_certificate/",blank=True,null=True)
