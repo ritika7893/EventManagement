@@ -195,7 +195,7 @@ class EventParticipant(models.Model):
     email = models.EmailField(null=True, blank=True)
     participant_type = models.CharField(max_length=50, blank=True, null=True)
     phone = models.CharField(max_length=15, null=True, blank=True)
-
+    pass_pdf = models.FileField(upload_to="event_passes/", null=True, blank=True)
     def __str__(self):
         if self.user_id:
             return f"{self.user_id.user_id} → {self.event_id.event_name}"

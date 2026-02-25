@@ -1,6 +1,8 @@
-import random
-from django.utils import timezone
+from datetime import timezone
+
 from .models import Event
+import random
+from django.core.mail import EmailMessage
 def generate_verification_code():
     return str(random.randint(100000, 999999))
 
@@ -23,7 +25,7 @@ Your registered email-id is {user.email}.
 Your email verification code is: {code}
 
 Regards
-BrEvents
+BR Infotainment
 """
 
     send_mail(
@@ -53,7 +55,7 @@ This code is valid for a limited time only.
 If you did not request this, please ignore this email.
 
 Regards,
-BrEvents
+BR Infotainment
 """
 
     send_mail(
@@ -76,11 +78,11 @@ We received a request to reset your account password.
 
 Your password reset OTP is: {code}
 
- This OTP is valid for a limited time.
+This OTP is valid for a limited time.
 If you did not request a password reset, please ignore this email.
 
 Regards,
-BrEvents
+BR Infotainment
 """
 
     send_mail(
@@ -93,7 +95,11 @@ BrEvents
 
 
 
-def send_event_participation_email(user=None, guest_email=None, guest_name=None, event=None):
+
+from django.core.mail import EmailMessage
+from django.conf import settings
+
+def send_event_participation_email(user=None, guest_email=None, guest_name=None, event=None, attachment=None):
     """
     Sends event participation confirmation email
     Supports:
@@ -114,35 +120,40 @@ def send_event_participation_email(user=None, guest_email=None, guest_name=None,
     else:
         return  # no email available
 
-    subject = f"🎉 Registration Confirmed: {event.event_name}"
+    subject = f"Registration Confirmed: {event.event_name}"
 
     message = f"""
 Dear {name},
 
 You have been successfully registered for the event.
 
-📌 Event Details:
+Event Details:
 ------------------------
 Event Name : {event.event_name}
 Event Type : {event.event_type or "N/A"}
 Date & Time: {event.event_date_time.strftime('%d %B %Y, %I:%M %p') if event.event_date_time else "To be announced"}
 Venue      : {event.venue or "To be announced"}
 
-We’re excited to have you join us!
+We're excited to have you join us!
 Please keep an eye on your email for further updates.
 
 Best regards,
-BrEvent
+BR Infotainment
 """
 
-    send_mail(
+    # 🔥 Only sending logic changed
+    email = EmailMessage(
         subject=subject,
-        message=message,
+        body=message,
         from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[to_email],
-        fail_silently=True,
+        to=[to_email],
     )
 
+    # Attach PDF if provided
+    if attachment:
+        email.attach_file(attachment)
+
+    email.send(fail_silently=True)
 def send_post_verification_event_notification(user):
     """
     Sends a "thank you for verifying" email with information about upcoming events.
@@ -155,7 +166,7 @@ def send_post_verification_event_notification(user):
     ).order_by('event_date_time')[:3]  # Limit to next 3 events
     
     # Even if there are no events, we can send a simple "you're verified" email.
-    subject = "Your BrEvents Account is Now Active!"
+    subject = "Your BRInfotainment Account is Now Active!"
     
     if upcoming_events:
         # Format events list for email
@@ -163,7 +174,7 @@ def send_post_verification_event_notification(user):
         for event in upcoming_events:
             event_date = event.event_date_time.strftime('%d %B %Y, %I:%M %p') if event.event_date_time else "To be announced"
             events_list += f"""
-📅 {event.event_name}
+ {event.event_name}
    Date & Time: {event_date}
    Venue: {event.venue or "To be announced"}
    Type: {event.event_type or "N/A"}
@@ -173,7 +184,7 @@ def send_post_verification_event_notification(user):
         message = f"""
 Hello {user.full_name or "User"},
 
-Thank you for verifying your email address! Your BrEvents account is now fully active.
+Thank you for verifying your email address! Your BR Infotainment account is now fully active.
 
 You're all set to explore and register for our events. Here are some upcoming opportunities you might be interested in:
 
@@ -182,21 +193,21 @@ You're all set to explore and register for our events. Here are some upcoming op
 Login to your account to secure your spot at these events or discover more.
 
 Best regards,
-The BrEvents Team
+BR Infotainment
 """
     else:
         # Fallback email if there are no upcoming events
         message = f"""
 Hello {user.full_name or "User"},
 
-Thank you for verifying your email address! Your BrEvents account is now fully active.
+Thank you for verifying your email address! Your BR Infotainment account is now fully active.
 
 You're all set to explore our platform. Check back soon for new and exciting events you can participate in.
 
 Login to your account to see what's new.
 
 Best regards,
-The BrEvents Team
+BR Infotainment
 """
     
     send_mail(

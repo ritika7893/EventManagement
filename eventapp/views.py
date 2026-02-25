@@ -1,6 +1,7 @@
 
 from urllib import request
 from django.db import IntegrityError
+from .pass_utils import generate_event_pass_pdf
 from eventapp.permissions import IsAdminRole
 from .utils import send_event_participation_email, send_post_verification_event_notification
 from .models import Blog, ConcertEventServiceItem, ContactUs, CorporateEventServiceItem, EntertainmentEventServiceItem, Event, AboutUsItem, AllLog, CardComponentItem, CarsouselItem1, CompanyDetailsItem, DiscoverYourTalentItem, EmailVerification, EventParticipant, GalleryItem, PageItem, PrivatePartiesEventServiceItem, SeminarEventServiceItem, TopNav1, UserReg
@@ -870,17 +871,24 @@ class EventParticipantAPIView(APIView):
         if serializer.is_valid():
             participant = serializer.save()
 
+        
+            pdf_file = generate_event_pass_pdf(participant)
+            participant.pass_pdf.save(pdf_file.name, pdf_file, save=True)
+
+          
             send_event_participation_email(
                 user=participant.user_id,
                 guest_email=participant.email,
                 guest_name=participant.full_name,
-                event=participant.event_id
+                event=participant.event_id,
+                attachment=participant.pass_pdf.path
             )
 
             return Response(
                 {
                     "success": True,
-                    "message": "Participant registered successfully"
+                    "message": "Participant registered successfully",
+                    "pass_pdf": participant.pass_pdf.url
                 },
                 status=status.HTTP_201_CREATED
             )
